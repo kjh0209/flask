@@ -1,6 +1,6 @@
-from flask import Flask, request, jsonify
-from datetime import datetime
+from flask import Flask, request, jsonify, render_template
 import requests
+from datetime import datetime
 app = Flask(__name__)
 
 @app.route("/")
