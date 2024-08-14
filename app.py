@@ -43,7 +43,7 @@ def get_lunch_menu(): # 오늘 급식
 
 
 @app.route('/menu', methods=['POST']) # 급식
-def message():
+def menu():
     response_text = get_lunch_menu()
     response_data = {
         "version": "2.0",
@@ -61,7 +61,7 @@ def message():
     return jsonify(response_data)
 
 @app.route('/hello', methods=['GET']) # 인사
-def message():
+def hello():
     response_text = "안녕하세요, 현재 datetime은", datetime.now().strftime("%Y%m%d")
     response_data = {
         "version": "2.0",
