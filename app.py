@@ -62,7 +62,7 @@ def menu():
 
 @app.route('/hello', methods=['GET', 'POST']) # 인사
 def hello():
-    response_text = "안녕하세요, 현재 datetime은", datetime.now().strftime("%Y%m%d")
+    response_text = "안녕하세요, 현재 datetime은 " + str(datetime.now().strftime("%Y%m%d"))
     response_data = {
         "version": "2.0",
         "template": {
