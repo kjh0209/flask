@@ -14,7 +14,8 @@ ATPT_OFCDC_SC_CODE = "P10" # 시도교육청코드
 
 def get_menu(when): # 오늘 급식
     BASE_URL = "https://open.neis.go.kr/hub/mealServiceDietInfo"
-    today = datetime.now().strftime('%Y%m%d')
+    # today = datetime.now().strftime('%Y%m%d')
+    today = 20240509
     params = {
         "KEY": API_KEY,
         "Type": "json",
@@ -37,7 +38,7 @@ def get_menu(when): # 오늘 급식
             for i in range(0, len(search), 1):
                 jjs = search[i]["MMEAL_SC_NM"]
                 if jjs == "조식" or jjs == "중식" or jjs == "석식":
-                    menu = menu +"\n<"+ jjs +">\n"+ search[i]["DDISH_NM"].replace("<br/>", "\n")
+                    menu = menu +"\n\n<"+ jjs +">\n"+ search[i]["DDISH_NM"].replace("<br/>", "\n")
             return menu
                 
         except (KeyError, IndexError):
@@ -194,6 +195,35 @@ def timetable():
 @app.route('/developers', methods=['GET', 'POST']) # 각인
 def developers():
     response_text = "33기 김윤석, 33기 김지혁"
+    response_data = {
+        "version": "2.0",
+        "template": {
+            "outputs": [
+                {
+                    "simpleText": {
+                        "text": response_text
+                    }
+                }
+            ]
+        }
+    }
+
+    return jsonify(response_data)
+
+@app.route('/help', methods=['GET', 'POST']) # 각인
+def help():
+    response_text = """
+    /메뉴, /급식, /밥: 조식, 중식, 석식 출력\n
+    /조식, /아침, /아침밥: 조식 출력\n
+    /중식, /점심, /점심밥: 중식 출력\n
+    /석식, /저녁, /저녁밥: 석식 출력\n
+    /시간표, /수업, /과목: 오늘의 시간표 출력\n
+    /도움말, /도움, /help: 도움말 출력\n
+    \n
+    급식 메뉴나 시간표 등 정보를 불러오는데 실패하는 경우 NEIS에 정보가 없는지 확인하세요.\n
+    어제, 오늘, 또는 내일과 같은 말을 함께 전달하면 챗봇이 이를 파악할 수 있습니다.\n
+    ex: 내일 급식이 뭐야?
+    """
     response_data = {
         "version": "2.0",
         "template": {
