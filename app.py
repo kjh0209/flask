@@ -37,7 +37,7 @@ def get_menu(when): # 오늘 급식
             for i in range(0, len(search), 1):
                 jjs = search[i]["MMEAL_SC_NM"]
                 if jjs == "조식" or jjs == "중식" or jjs == "석식":
-                    menu = menu +"<"+ jjs +">\n"+ search[i]["DDISH_NM"].replace("<br/>", "\n\n")
+                    menu = menu +"\n<"+ jjs +">\n"+ search[i]["DDISH_NM"].replace("<br/>", "\n")
             return menu
                 
         except (KeyError, IndexError):
@@ -47,7 +47,7 @@ def get_menu(when): # 오늘 급식
         try:
             for meal in data["mealServiceDietInfo"][1]["row"]:
                 if meal["MMEAL_SC_NM"] == when:
-                    menu = meal["DDISH_NM"].replace("<br/>", "\n")
+                    menu = "<"+when+">\n"+meal["DDISH_NM"].replace("<br/>", "\n")
                     return menu
             
             return "오늘 메뉴를 불러오는데 실패했습니다."
@@ -70,10 +70,10 @@ def get_timetable():
     }
     response = requests.get(BASE_URL, params=params)
     data = response.json()
-    search = data["hisTimetable"][1]["row"]
-    timetable = "\n"
-    grade = 0
     try:
+        search = data["hisTimetable"][1]["row"]
+        timetable = "\n"
+        grade = 0
         for i in range(0, len(search), 1):
             if grade != search[i]["GRADE"]:
                 grade += 1
