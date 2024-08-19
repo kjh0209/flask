@@ -74,12 +74,20 @@ def get_timetable():
     data = response.json()
     try:
         search = data["hisTimetable"][1]["row"]
+        # return str(search[len(search)-1]["CLASS_NM"])
+        # return search
         timetable = "\n"
-        grade = 0
+        GRADE = 0
+        CLASS_NM = 0
         for i in range(0, len(search), 1):
-            if grade != search[i]["GRADE"]:
-                grade += 1
-                timetable += "<"+str(grade)+"학년 시간표>\n"
+            if str(GRADE) != search[i]["GRADE"]:
+                GRADE += 1
+                CLASS_NM = 0
+                timetable += "<"+str(GRADE)+"학년 시간표>\n\n"
+            if (str(CLASS_NM) != search[i]["CLASS_NM"] and str(search[i]["CLASS_NM"]) != "None"):
+                CLASS_NM += 1
+                timetable += "<"+str(CLASS_NM)+"반>\n"
+
             timetable += search[i]["ITRT_CNTNT"] + "\n"
         return timetable
     except:
@@ -260,6 +268,7 @@ def help():
     /시간표, /수업, /과목: 오늘의 시간표 출력\n
     /도움말, /도움, /help: 도움말 출력\n
     /농담, /넝담, /장난: 봇과의 일상적인 대화\n
+    /개발자: 우리를 누가 만들었는지 확인해보세요\n
     \n
     급식 메뉴나 시간표 등 정보를 불러오는데 실패하는 경우 NEIS에 정보가 없는지 확인하세요.\n
     어제, 오늘, 또는 내일과 같은 말을 함께 전달하면 챗봇이 이를 파악할 수 있습니다.\n
@@ -297,6 +306,3 @@ def state():
     }
 
     return jsonify(response_data)
-
-if __name__ == '__main__':
-    app.run()
