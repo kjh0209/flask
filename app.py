@@ -11,8 +11,8 @@ def convert_date_format(date_str):
     date_str = re.sub(r'[^\d]', ' ', date_str).strip()
 
     # 년, 월, 일을 추출
-    year, month, day = date_str.split()
-
+    month, day = date_str.split() #월, 일만 들어와도 20240809 이런 식으로 변환 가능하게 만들기
+    year = 2024
     # 'YYYYMMDD' 형식으로 변환
     formatted_date = f"{year}{month.zfill(2)}{day.zfill(2)}"
     
@@ -43,6 +43,20 @@ def datecal(today):
         else:
             today = convert_date_format(today)
     return int(today)
+
+def convert_class_format(class_str):
+    # 숫자만 추출하는 정규식 패턴
+    pattern = r'(\d)[^\d]*(\d)'
+    
+    # 정규식으로 학년과 반 추출
+    match = re.search(pattern, class_str)
+    
+    if match:
+        grade = match.group(1)
+        classroom = match.group(2)
+        return f"{grade},{classroom}"
+    else:
+        return "Invalid format"
 
 def ex_res_data(response_text):
     response_data = {
@@ -118,9 +132,12 @@ def get_menu(when): # 오늘 급식
 def get_timetable():
     BASE_URL = "https://open.neis.go.kr/hub/hisTimetable"
     # https://open.neis.go.kr/hub/hisTimetable?ATPT_OFCDC_SC_CODE=P10&SD_SCHUL_CODE=8321124&AY=2024&SEM=1&ALL_TI_YMD=20240509
-    today = today = request.json.get('action').get('detailParams').get('날짜').get('origin')
+    today = request.json.get('action').get('detailParams').get('날짜').get('origin')
+    grade = request.json.get('action').get('detailParams').get('학년반').get('origin')
+    grade = convert_class_format(grade)
+    grade = str(grade)
     #today = 20240509 # [중요] 배포시 삭제할 것
-    today = datecal(today)
+    today = datecal(today) #시간표 몇학년 몇반 입력해서 볼 수 있게 하기
     params = {
         "KEY": API_KEY,
         "Type": "json",
@@ -140,7 +157,8 @@ def get_timetable():
         timetable = "\n"
         GRADE = 0
         CLASS_NM = 0
-        for i in range(0, len(search), 1):
+        if grade == 'all':
+          for i in range(0, len(search), 1):
             if str(GRADE) != search[i]["GRADE"]:
                 GRADE += 1
                 CLASS_NM = 0
@@ -150,6 +168,12 @@ def get_timetable():
                 timetable += "<"+str(CLASS_NM)+"반>\n"
 
             timetable += search[i]["ITRT_CNTNT"] + "\n"
+        else:
+            GRADE = int(grade.split(',')[0])
+            CLASS_NM = int(grade.split(',')[1])
+            for i in range(0, len(search), 1):
+                if str(GRADE) != search[i]["GRADE"]:
+                    timetable += "\n<"+str(GRADE)+"학년 시간표>\n"
         today = str(today)
         return today[:4]+'년 '+today[4:6]+'월 '+today[6:]+'일\n '+timetable
     except:
