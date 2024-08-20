@@ -227,9 +227,17 @@ def get_statement():
 def get_calendar():
     BASE_URL = "https://open.neis.go.kr/hub/SchoolSchedule"
     today = request.json.get('action').get('detailParams').get('월').get('origin')
-    if today=="오늘":
+    if today=="이번달" or "이번 달":
         today = datetime.date.today()
         this_month_first = int(str(today.year) + str(today.month).zfill(2) + '01') # 20240801
+        month = str(today.month)+'월'
+    elif today=="저번달" or "저번 달":
+        today = datetime.date.today()
+        this_month_first = int(str(today.year) + str(int(str(today.month).zfill(2))-1) + '01') # 20240801
+        month = str(today.month)+'월'
+    elif today=="다음달" or "다음 달":
+        today = datetime.date.today()
+        this_month_first = int(str(today.year) + str(int(str(today.month).zfill(2))+1) + '01') # 20240801
         month = str(today.month)+'월'
     else:
         this_month_first = int("2024"+today.replace("월", "").zfill(2)+'01')
