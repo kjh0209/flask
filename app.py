@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, render_template
 import requests
-from datetime import datetime, timedelta
+from datetime import timedelta
 import datetime
 import re
 
@@ -24,7 +24,10 @@ def datecal(today):
         return "날짜가 제대로 입력되지 않았습니다."
     else:
         if today == '오늘':
-            today = datetime.now().strftime('%Y%m%d')
+            today = datetime.date.today()
+            today = str(today)
+            today = today.split('-')
+            today = ''.join(today)
         elif today == '내일':
             today = datetime.date.today()
             today = today + timedelta(days=1)
