@@ -4,6 +4,21 @@ from datetime import datetime
 
 app = Flask(__name__)
 
+def ex_res_data(response_text):
+    response_data = {
+        "version": "2.0",
+        "template": {
+            "outputs": [
+                {
+                    "simpleText": {
+                        "text": response_text
+                    }
+                }
+            ]
+        }   
+    }
+    return response_data
+
 @app.route("/")
 def index():
     return render_template('/index.html')
@@ -14,8 +29,8 @@ ATPT_OFCDC_SC_CODE = "P10" # 시도교육청코드
 
 def get_menu(when): # 오늘 급식
     BASE_URL = "https://open.neis.go.kr/hub/mealServiceDietInfo"
-    # today = datetime.now().strftime('%Y%m%d')
-    today = 20240509 # [중요] 배포시 삭제할 것
+    today = request.json.get('action').get('params').get('date')
+    #today = 20240509 # [중요] 배포시 삭제할 것
     params = {
         "KEY": API_KEY,
         "Type": "json",
@@ -58,8 +73,8 @@ def get_menu(when): # 오늘 급식
 def get_timetable():
     BASE_URL = "https://open.neis.go.kr/hub/hisTimetable"
     # https://open.neis.go.kr/hub/hisTimetable?ATPT_OFCDC_SC_CODE=P10&SD_SCHUL_CODE=8321124&AY=2024&SEM=1&ALL_TI_YMD=20240509
-    # today = datetime.now().strftime('%Y%m%d')
-    today = 20240509 # [중요] 배포시 삭제할 것
+    today = request.json.get('action').get('params').get('date')
+    #today = 20240509 # [중요] 배포시 삭제할 것
     params = {
         "KEY": API_KEY,
         "Type": "json",
@@ -83,7 +98,7 @@ def get_timetable():
             if str(GRADE) != search[i]["GRADE"]:
                 GRADE += 1
                 CLASS_NM = 0
-                timetable += "<"+str(GRADE)+"학년 시간표>\n\n"
+                timetable += "\n<"+str(GRADE)+"학년 시간표>\n"
             if (str(CLASS_NM) != search[i]["CLASS_NM"] and str(search[i]["CLASS_NM"]) != "None"):
                 CLASS_NM += 1
                 timetable += "<"+str(CLASS_NM)+"반>\n"
@@ -94,8 +109,8 @@ def get_timetable():
         return "시간표를 불러오는데 실패했습니다."
     
 def get_statement():
-    # today = datetime.now().strftime('%Y%m%d')
-    today = 20240509 # [중요] 배포시 삭제할 것
+    today = request.json.get('action').get('params').get('date')
+    #today = 20240509 # [중요] 배포시 삭제할 것
     statement = ["급식: 정상", "시간표: 정상", today] # 급식, 시간표
 
     BASE_URL = "https://open.neis.go.kr/hub/mealServiceDietInfo"
@@ -135,128 +150,37 @@ def get_statement():
 @app.route('/menu/breakfast', methods=['GET', 'POST']) # 급식
 def menu_breakfast():
     response_text = get_menu("조식")
-    response_data = {
-        "version": "2.0",
-        "template": {
-            "outputs": [
-                {
-                    "simpleText": {
-                        "text": response_text
-                    }
-                }
-            ]
-        }
-    }
-
-    return jsonify(response_data)
+    return jsonify(ex_res_data(response_text))
 
 @app.route('/menu/lunch', methods=['GET', 'POST']) # 급식
 def menu_lunch():
     response_text = get_menu("중식")
-    response_data = {
-        "version": "2.0",
-        "template": {
-            "outputs": [
-                {
-                    "simpleText": {
-                        "text": response_text
-                    }
-                }
-            ]
-        }
-    }
-
-    return jsonify(response_data)
+    return jsonify(ex_res_data(response_text))
 
 @app.route('/menu/dinner', methods=['GET', 'POST']) # 급식
 def menu_dinner():
     response_text = get_menu("석식")
-    response_data = {
-        "version": "2.0",
-        "template": {
-            "outputs": [
-                {
-                    "simpleText": {
-                        "text": response_text
-                    }
-                }
-            ]
-        }
-    }
-
-    return jsonify(response_data)
+    return jsonify(ex_res_data(response_text))
 
 @app.route('/menu/all', methods=['GET', 'POST']) # 급식
 def menu_all():
     response_text = get_menu("전체")
-    response_data = {
-        "version": "2.0",
-        "template": {
-            "outputs": [
-                {
-                    "simpleText": {
-                        "text": response_text
-                    }
-                }
-            ]
-        }
-    }
-
-    return jsonify(response_data)
+    return jsonify(ex_res_data(response_text))
 
 @app.route('/hello', methods=['GET', 'POST']) # 인사
 def hello():
     response_text = "안녕하세요, 현재 datetime은", datetime.now().strftime("%Y%m%d")
-    response_data = {
-        "version": "2.0",
-        "template": {
-            "outputs": [
-                {
-                    "simpleText": {
-                        "text": response_text
-                    }
-                }
-            ]
-        }
-    }
-
-    return jsonify(response_data)
+    return jsonify(ex_res_data(response_text))
 
 @app.route('/timetable', methods=['GET', 'POST']) # 시간표
 def timetable():
     response_text = get_timetable()
-    response_data = {
-        "version": "2.0",
-        "template": {
-            "outputs": [
-                {
-                    "simpleText": {
-                        "text": response_text
-                    }
-                }
-            ]
-        }
-    }
-
-    return jsonify(response_data)
+    return jsonify(ex_res_data(response_text))
 
 @app.route('/developers', methods=['GET', 'POST']) # 각인
 def developers():
     response_text = "33기 김윤석, 33기 김지혁"
-    response_data = {
-        "version": "2.0",
-        "template": {
-            "outputs": [
-                {
-                    "simpleText": {
-                        "text": response_text
-                    }
-                }
-            ]
-        }
-    }
-
-    return jsonify(response_data)
+    return jsonify(ex_res_data(response_text))
 
 @app.route('/help', methods=['GET', 'POST']) # 각인
 def help():
@@ -274,35 +198,12 @@ def help():
     어제, 오늘, 또는 내일과 같은 말을 함께 전달하면 챗봇이 이를 파악할 수 있습니다.\n
     ex: 내일 급식이 뭐야?
     """
-    response_data = {
-        "version": "2.0",
-        "template": {
-            "outputs": [
-                {
-                    "simpleText": {
-                        "text": response_text
-                    }
-                }
-            ]
-        }
-    }
-
-    return jsonify(response_data)
+    return jsonify(ex_res_data(response_text))
 
 @app.route('/state', methods=['GET', 'POST']) # 봇상태
 def state():
     response_text = get_statement()
-    response_data = {
-        "version": "2.0",
-        "template": {
-            "outputs": [
-                {
-                    "simpleText": {
-                        "text": response_text
-                    }
-                }
-            ]
-        }
-    }
+    return jsonify(ex_res_data(response_text))
 
-    return jsonify(response_data)
+if __name__ == '__main__':
+    app.run()
