@@ -69,9 +69,9 @@ ATPT_OFCDC_SC_CODE = "P10" # 시도교육청코드
 
 def get_menu(when): # 오늘 급식
     BASE_URL = "https://open.neis.go.kr/hub/mealServiceDietInfo"
-    #today = request.json.get('action').get('detailParams').get('날짜').get('origin')
-    today = 20240509 # [중요] 배포시 삭제할 것
-    #today = datecal(today)
+    today = request.json.get('action').get('detailParams').get('날짜').get('origin')
+    #today = 20240509 # [중요] 배포시 삭제할 것
+    today = datecal(today)
     params = {
         "KEY": API_KEY,
         "Type": "json",
