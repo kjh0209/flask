@@ -1,6 +1,22 @@
 from flask import Flask, request, jsonify, render_template
 import requests
 from datetime import datetime, timedelta
+import re
+
+def convert_date_format(date_str):
+    # 한글과 공백 제거
+    date_str = re.sub(r'[^\d]', '', date_str)
+
+    # 년, 월, 일을 추출
+    year = date_str[:4]
+    month = date_str[4:6]
+    day = date_str[6:8]
+
+    # 'YYYYMMDD' 형식으로 변환
+    formatted_date = f"{year}{month.zfill(2)}{day.zfill(2)}"
+    
+    return formatted_date
+
 
 app = Flask(__name__)
 
@@ -29,7 +45,7 @@ ATPT_OFCDC_SC_CODE = "P10" # 시도교육청코드
 
 def get_menu(when): # 오늘 급식
     BASE_URL = "https://open.neis.go.kr/hub/mealServiceDietInfo"
-    today = request.json.get('action').get('params').get('date')
+    today = request.json.get('action').get('params').get('날짜')
     #today = 20240509 # [중요] 배포시 삭제할 것
     if today == '오늘':
         today = datetime.now().strftime('%Y%m%d')
@@ -39,6 +55,8 @@ def get_menu(when): # 오늘 급식
     elif today == '어제':
         today = datetime.now().strftime('%Y%m%d')
         today = today - timedelta(days=1)
+    else:
+        today = convert_date_format(today)
     params = {
         "KEY": API_KEY,
         "Type": "json",
@@ -84,7 +102,7 @@ def get_menu(when): # 오늘 급식
 def get_timetable():
     BASE_URL = "https://open.neis.go.kr/hub/hisTimetable"
     # https://open.neis.go.kr/hub/hisTimetable?ATPT_OFCDC_SC_CODE=P10&SD_SCHUL_CODE=8321124&AY=2024&SEM=1&ALL_TI_YMD=20240509
-    today = request.json.get('action').get('params').get('date')
+    today = request.json.get('action').get('params').get('날짜')
     #today = 20240509 # [중요] 배포시 삭제할 것
     if today == '오늘':
         today = datetime.now().strftime('%Y%m%d')
@@ -94,6 +112,8 @@ def get_timetable():
     elif today == '어제':
         today = datetime.now().strftime('%Y%m%d')
         today = today - timedelta(days=1)
+    else:
+        today = convert_date_format(today)
     params = {
         "KEY": API_KEY,
         "Type": "json",
@@ -130,7 +150,7 @@ def get_timetable():
         return today[:4]+'년 '+today[4:6]+'월 '+today[6:]+'일 '+"시간표를 불러오는데 실패했습니다."
     
 def get_statement():
-    today = request.json.get('action').get('params').get('date')
+    today = request.json.get('action').get('params').get('날짜')
     #today = 20240509 # [중요] 배포시 삭제할 것
     if today == '오늘':
         today = datetime.now().strftime('%Y%m%d')
@@ -140,6 +160,8 @@ def get_statement():
     elif today == '어제':
         today = datetime.now().strftime('%Y%m%d')
         today = today - timedelta(days=1)
+    else:
+        today = convert_date_format(today)
     statement = ["급식: 정상", "시간표: 정상", today] # 급식, 시간표
 
     BASE_URL = "https://open.neis.go.kr/hub/mealServiceDietInfo"
