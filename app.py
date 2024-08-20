@@ -186,7 +186,7 @@ def get_timetable():
         return today[:4]+'년 '+today[4:6]+'월 '+today[6:]+'일 '+"시간표를 불러오는데 실패했습니다."
     
 def get_statement():
-    today = today = request.json.get('action').get('detailParams').get('날짜').get('origin')
+    today = request.json.get('action').get('detailParams').get('날짜').get('origin')
     #today = 20240509 # [중요] 배포시 삭제할 것
     today = datecal(today)
     statement = ["급식: 정상", "시간표: 정상", today] # 급식, 시간표
@@ -226,7 +226,11 @@ def get_statement():
 
 def get_calendar():
     BASE_URL = "https://open.neis.go.kr/hub/SchoolSchedule"
-    today = datetime.date.today()
+    today = request.json.get('action').get('detailParams').get('월').get('origin')
+    if today=="오늘":
+        today = datetime.date.today()
+    else:
+        today = int("2024-"+today.replace("월", "").zfill(2)+'-01')
     this_month_first = int(str(today.year) + str(today.month).zfill(2) + '01') # 20240801
     params = {
         "KEY": API_KEY,
