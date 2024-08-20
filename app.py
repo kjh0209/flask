@@ -265,6 +265,3 @@ def help():
 def state():
     response_text = get_statement()
     return jsonify(ex_res_data(response_text))
-
-if __name__ == '__main__':
-    app.run()
