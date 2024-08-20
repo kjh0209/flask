@@ -262,6 +262,43 @@ def get_calendar():
     except:
         return month + " 학사일정을 불러오는 데에 실패했습니다."
 
+def get_exam():
+    today = datetime.date.today()
+    for i in range(0, 13-today.month, 1):
+        BASE_URL = "https://open.neis.go.kr/hub/SchoolSchedule"
+        this_month_first = int(str(today.year) + str(today.month + i).zfill(2) + '01')
+        params = {
+            "KEY": API_KEY,
+            "Type": "json",
+            "ATPT_OFCDC_SC_CODE": ATPT_OFCDC_SC_CODE,
+            "SD_SCHUL_CODE": SD_SCHUL_CODE,
+
+            "AA_FROM_YMD": this_month_first,
+            "AA_TO_YMD": this_month_first+30,
+        }
+        response = requests.get(BASE_URL, params=params)
+        data = response.json()
+        try:
+            search = data["SchoolSchedule"][1]["row"]
+            for j in range(0, len(search), 1):
+                sen = search[j]["EVENT_NM"]
+                if sen == "1학기1차고사" or sen == "1학기2차고사" or sen == "2학기1차고사" or sen == "2학기 2차고사":
+                    target_date = datetime.datetime.strptime(search[i]["AA_YMD"], "%Y%m%d")
+        except:
+            return "학사일정을 불러오는 데에 실패했습니다."
+    formatted_today = datetime.datetime.strptime(today.strftime("%Y%m%d"), "%Y%m%d")
+    d_day = (target_date - formatted_today).days
+    if d_day >= 30:
+        return "다음 시험까지 D-" + str(d_day) + "만큼 남았습니다."
+    elif d_day >=21:
+        return "다음 시험까지 D-" + str(d_day) + "만큼 남았습니다.\n공부하세요."
+    elif d_day >=14:
+        return "다음 시험까지 D-" + str(d_day) + "만큼 남았습니다.\n제발 긴장 좀 하세요."
+    elif d_day >=7:
+        return "다음 시험까지 D-" + str(d_day) + "만큼 남았습니다.\n이걸 볼 시간에 공부나 하세요."
+    else:
+        "다음 시험까지 D-" + str(d_day) + "만큼 남았습니다.\n멍청이."
+
 
 @app.route('/menu/breakfast', methods=['GET', 'POST']) # 급식
 def menu_breakfast():
@@ -324,4 +361,9 @@ def state():
 @app.route('/calendar', methods=['GET', 'POST']) # 학사일정
 def calendar():
     response_text = get_calendar()
+    return jsonify(ex_res_data(response_text))
+
+@app.route('/exam', methods=['GET', 'POST']) # 학사일정
+def exam():
+    response_text = get_exam()
     return jsonify(ex_res_data(response_text))
