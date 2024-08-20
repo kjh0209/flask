@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, render_template
 import requests
-from datetime import datetime
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
@@ -31,6 +31,14 @@ def get_menu(when): # 오늘 급식
     BASE_URL = "https://open.neis.go.kr/hub/mealServiceDietInfo"
     today = request.json.get('action').get('params').get('date')
     #today = 20240509 # [중요] 배포시 삭제할 것
+    if today == '오늘':
+        today = datetime.now().strftime('%Y%m%d')
+    elif today == '내일':
+        today = datetime.now().strftime('%Y%m%d')
+        today = today + timedelta(days=1)
+    elif today == '어제':
+        today = datetime.now().strftime('%Y%m%d')
+        today = today - timedelta(days=1)
     params = {
         "KEY": API_KEY,
         "Type": "json",
@@ -54,7 +62,7 @@ def get_menu(when): # 오늘 급식
                 jjs = search[i]["MMEAL_SC_NM"]
                 if jjs == "조식" or jjs == "중식" or jjs == "석식":
                     menu = menu +"\n\n<"+ jjs +">\n"+ search[i]["DDISH_NM"].replace("<br/>", "\n")
-            return menu
+            return today[:4]+'년 '+today[4:6]+'월 '+today[6:]+'일\n '+menu
                 
         except (KeyError, IndexError):
             return "오늘 메뉴를 불러오는데 실패했습니다."
@@ -64,17 +72,25 @@ def get_menu(when): # 오늘 급식
             for meal in data["mealServiceDietInfo"][1]["row"]:
                 if meal["MMEAL_SC_NM"] == when:
                     menu = "<"+when+">\n"+meal["DDISH_NM"].replace("<br/>", "\n")
-                    return menu
+                    return today[:4]+'년 '+today[4:6]+'월 '+today[6:]+'일\n '+menu
             
-            return "오늘 메뉴를 불러오는데 실패했습니다."
+            return today[:4]+'년 '+today[4:6]+'월 '+today[6:]+'일 '+"메뉴를 불러오는데 실패했습니다."
         except (KeyError, IndexError):
-            return "오늘 메뉴를 불러오는데 실패했습니다."
+            return today[:4]+'년 '+today[4:6]+'월 '+today[6:]+'일 '+"메뉴를 불러오는데 실패했습니다."
         
 def get_timetable():
     BASE_URL = "https://open.neis.go.kr/hub/hisTimetable"
     # https://open.neis.go.kr/hub/hisTimetable?ATPT_OFCDC_SC_CODE=P10&SD_SCHUL_CODE=8321124&AY=2024&SEM=1&ALL_TI_YMD=20240509
     today = request.json.get('action').get('params').get('date')
     #today = 20240509 # [중요] 배포시 삭제할 것
+    if today == '오늘':
+        today = datetime.now().strftime('%Y%m%d')
+    elif today == '내일':
+        today = datetime.now().strftime('%Y%m%d')
+        today = today + timedelta(days=1)
+    elif today == '어제':
+        today = datetime.now().strftime('%Y%m%d')
+        today = today - timedelta(days=1)
     params = {
         "KEY": API_KEY,
         "Type": "json",
@@ -104,13 +120,21 @@ def get_timetable():
                 timetable += "<"+str(CLASS_NM)+"반>\n"
 
             timetable += search[i]["ITRT_CNTNT"] + "\n"
-        return timetable
+        return today[:4]+'년 '+today[4:6]+'월 '+today[6:]+'일\n '+timetable
     except:
-        return "시간표를 불러오는데 실패했습니다."
+        return today[:4]+'년 '+today[4:6]+'월 '+today[6:]+'일 '+"시간표를 불러오는데 실패했습니다."
     
 def get_statement():
     today = request.json.get('action').get('params').get('date')
     #today = 20240509 # [중요] 배포시 삭제할 것
+    if today == '오늘':
+        today = datetime.now().strftime('%Y%m%d')
+    elif today == '내일':
+        today = datetime.now().strftime('%Y%m%d')
+        today = today + timedelta(days=1)
+    elif today == '어제':
+        today = datetime.now().strftime('%Y%m%d')
+        today = today - timedelta(days=1)
     statement = ["급식: 정상", "시간표: 정상", today] # 급식, 시간표
 
     BASE_URL = "https://open.neis.go.kr/hub/mealServiceDietInfo"
