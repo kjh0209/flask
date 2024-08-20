@@ -171,9 +171,14 @@ def get_timetable():
         else:
             GRADE = int(grade.split(',')[0])
             CLASS_NM = int(grade.split(',')[1])
-            for i in range(0, len(search), 1):
-                if str(GRADE) != search[i]["GRADE"]:
-                    timetable += "\n<"+str(GRADE)+"학년 시간표>\n"
+            timetable += "<"+str(GRADE)+"학년 시간표>\n"
+            timetable += "<"+str(CLASS_NM)+"반>\n"
+            for i in range(0, len(search), 1): 
+                if str(GRADE) == search[i]["GRADE"]: 
+                  if (str(CLASS_NM) == search[i]["CLASS_NM"] and str(search[i]["CLASS_NM"]) != "None"):
+                    timetable += search[i]["ITRT_CNTNT"] + "\n"
+                elif str(GRADE) < search[i]["GRADE"]:
+                    break
         today = str(today)
         return today[:4]+'년 '+today[4:6]+'월 '+today[6:]+'일\n '+timetable
     except:
@@ -218,6 +223,30 @@ def get_statement():
     except:
         statement[1] = "시간표: 오류"
     return [i for i in statement]
+
+def get_calendar():
+    BASE_URL = "https://open.neis.go.kr/hub/SchoolSchedule"
+    today = datetime.date.today()
+    this_month_first = int(str(today.year) + str(today.month).zfill(2) + '01') # 20240801
+    params = {
+        "KEY": API_KEY,
+        "Type": "json",
+        "ATPT_OFCDC_SC_CODE": ATPT_OFCDC_SC_CODE,
+        "SD_SCHUL_CODE": SD_SCHUL_CODE,
+
+        "AA_FROM_YMD": this_month_first,
+        "AA_TO_YMD": this_month_first+30,
+    }
+    response = requests.get(BASE_URL, params=params)
+    data = response.json()
+    try:
+        search = data["SchoolSchedule"][1]["row"]
+        calendar = "<"+str(today.month)+"월 학사일정>\n"
+        for i in range(0, len(search), 1):
+            calendar += search[i]["AA_YMD"] + ": " + search[i]["EVENT_NM"] + "\n"
+        return calendar
+    except:
+        return str(today.month) + "월 학사일정을 불러오는 데에 실패했습니다."
 
 
 @app.route('/menu/breakfast', methods=['GET', 'POST']) # 급식
@@ -277,3 +306,9 @@ def help():
 def state():
     response_text = get_statement()
     return jsonify(ex_res_data(response_text))
+
+@app.route('/calendar', methods=['GET', 'POST']) # 학사일정
+def calendar():
+    response_text = get_calendar()
+    return jsonify(ex_res_data(response_text))
+
