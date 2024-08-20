@@ -7,12 +7,10 @@ app = Flask(__name__)
 
 def convert_date_format(date_str):
     # 한글과 공백 제거
-    date_str = re.sub(r'[^\d]', '', date_str)
+    date_str = re.sub(r'[^\d]', ' ', date_str).strip()
 
     # 년, 월, 일을 추출
-    year = date_str[:4]
-    month = date_str[4:6]
-    day = date_str[6:8]
+    year, month, day = date_str.split()
 
     # 'YYYYMMDD' 형식으로 변환
     formatted_date = f"{year}{month.zfill(2)}{day.zfill(2)}"
