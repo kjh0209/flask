@@ -230,8 +230,10 @@ def get_calendar():
     if today=="오늘":
         today = datetime.date.today()
         this_month_first = int(str(today.year) + str(today.month).zfill(2) + '01') # 20240801
+        month = str(today.month)+'월'
     else:
         this_month_first = int("2024"+today.replace("월", "").zfill(2)+'01')
+        month = today
     params = {
         "KEY": API_KEY,
         "Type": "json",
@@ -245,12 +247,12 @@ def get_calendar():
     data = response.json()
     try:
         search = data["SchoolSchedule"][1]["row"]
-        calendar = "<"+str(today.month)+"월 학사일정>\n"
+        calendar = "<"+month+" 학사일정>\n"
         for i in range(0, len(search), 1):
             calendar += search[i]["AA_YMD"] + ": " + search[i]["EVENT_NM"] + "\n"
         return calendar
     except:
-        return str(today.month) + "월 학사일정을 불러오는 데에 실패했습니다."
+        return month + " 학사일정을 불러오는 데에 실패했습니다."
 
 
 @app.route('/menu/breakfast', methods=['GET', 'POST']) # 급식
@@ -315,4 +317,3 @@ def state():
 def calendar():
     response_text = get_calendar()
     return jsonify(ex_res_data(response_text))
-
