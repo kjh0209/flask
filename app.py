@@ -229,9 +229,9 @@ def get_calendar():
     today = request.json.get('action').get('detailParams').get('월').get('origin')
     if today=="오늘":
         today = datetime.date.today()
+        this_month_first = int(str(today.year) + str(today.month).zfill(2) + '01') # 20240801
     else:
-        today = int("2024-"+today.replace("월", "").zfill(2)+'-01')
-    this_month_first = int(str(today.year) + str(today.month).zfill(2) + '01') # 20240801
+        this_month_first = int("2024"+today.replace("월", "").zfill(2)+'01')
     params = {
         "KEY": API_KEY,
         "Type": "json",
