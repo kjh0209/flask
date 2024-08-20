@@ -62,6 +62,7 @@ def get_menu(when): # 오늘 급식
                 jjs = search[i]["MMEAL_SC_NM"]
                 if jjs == "조식" or jjs == "중식" or jjs == "석식":
                     menu = menu +"\n\n<"+ jjs +">\n"+ search[i]["DDISH_NM"].replace("<br/>", "\n")
+            today = str(today)
             return today[:4]+'년 '+today[4:6]+'월 '+today[6:]+'일\n '+menu
                 
         except (KeyError, IndexError):
@@ -72,10 +73,12 @@ def get_menu(when): # 오늘 급식
             for meal in data["mealServiceDietInfo"][1]["row"]:
                 if meal["MMEAL_SC_NM"] == when:
                     menu = "<"+when+">\n"+meal["DDISH_NM"].replace("<br/>", "\n")
+                    today = str(today)
                     return today[:4]+'년 '+today[4:6]+'월 '+today[6:]+'일\n '+menu
-            
+            today = str(today)
             return today[:4]+'년 '+today[4:6]+'월 '+today[6:]+'일 '+"메뉴를 불러오는데 실패했습니다."
         except (KeyError, IndexError):
+            today = str(today)
             return today[:4]+'년 '+today[4:6]+'월 '+today[6:]+'일 '+"메뉴를 불러오는데 실패했습니다."
         
 def get_timetable():
@@ -120,8 +123,10 @@ def get_timetable():
                 timetable += "<"+str(CLASS_NM)+"반>\n"
 
             timetable += search[i]["ITRT_CNTNT"] + "\n"
+        today = str(today)
         return today[:4]+'년 '+today[4:6]+'월 '+today[6:]+'일\n '+timetable
     except:
+        today = str(today)
         return today[:4]+'년 '+today[4:6]+'월 '+today[6:]+'일 '+"시간표를 불러오는데 실패했습니다."
     
 def get_statement():
