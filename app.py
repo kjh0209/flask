@@ -118,7 +118,7 @@ def get_menu(when): # 오늘 급식
 def get_timetable():
     BASE_URL = "https://open.neis.go.kr/hub/hisTimetable"
     # https://open.neis.go.kr/hub/hisTimetable?ATPT_OFCDC_SC_CODE=P10&SD_SCHUL_CODE=8321124&AY=2024&SEM=1&ALL_TI_YMD=20240509
-    #today = today = request.json.get('action').get('detailParams').get('날짜').get('origin')
+    today = request.json.get('action').get('detailParams').get('날짜').get('origin')
     # today = 20240509 # [중요] 배포시 삭제할 것
     today = datecal(today) #시간표 몇학년 몇반 입력해서 볼 수 있게 하기
     #today = 20240509
