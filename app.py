@@ -222,9 +222,8 @@ def get_calendar():
 
 def get_exam():
     today = datetime.date.today()
-    bbb = 0
+    BASE_URL = "https://open.neis.go.kr/hub/SchoolSchedule"
     for i in range(0, 13-today.month, 1):
-        BASE_URL = "https://open.neis.go.kr/hub/SchoolSchedule"
         if i:
             this_month_first = int(str(today.year) + str(today.month + i).zfill(2) + '01')
         else:
@@ -240,19 +239,14 @@ def get_exam():
         }
         response = requests.get(BASE_URL, params=params)
         data = response.json()
-        if bbb:
-            break
         try:
             search = data["SchoolSchedule"][1]["row"]
             for j in range(0, len(search), 1):
                 sen = search[j]["EVENT_NM"]
                 if sen == "1학기1차고사" or sen == "1학기2차고사" or sen == "2학기1차고사" or sen == "2학기2차고사":
                     target_date = datetime.datetime.strptime(search[j]["AA_YMD"], "%Y%m%d")
-                    bbb = 1
-                    break
         except:
             return "학사일정을 불러오는 데에 실패했습니다."
-    
     formatted_today = datetime.datetime.strptime(today.strftime("%Y%m%d"), "%Y%m%d")
     d_day = (target_date - formatted_today).days
     if d_day >= 30:
