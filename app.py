@@ -6,20 +6,20 @@ import re
 
 app = Flask(__name__)
 
-def convert_date_format(date_str): # 날짜 변환
+def convert_date_format(date_str):
     # 한글과 공백 제거
     date_str = re.sub(r'[^\d]', ' ', date_str).strip()
 
     # 년, 월, 일을 추출
-    year, month, day = date_str.split() #월, 일만 들어와도 20240809 이런 식으로 변환 가능하게 만들기
-
+    month, day = date_str.split() #월, 일만 들어와도 20240809 이런 식으로 변환 가능하게 만들기
+    year = 2024
     # 'YYYYMMDD' 형식으로 변환
     formatted_date = f"{year}{month.zfill(2)}{day.zfill(2)}"
     
     return formatted_date
 
 
-def datecal(today): # 날짜 계산
+def datecal(today):
     if not today:
         return "날짜가 제대로 입력되지 않았습니다."
     else:
@@ -44,7 +44,21 @@ def datecal(today): # 날짜 계산
             today = convert_date_format(today)
     return int(today)
 
-def ex_res_data(response_text): # 응답 출력
+def convert_class_format(class_str):
+    # 숫자만 추출하는 정규식 패턴
+    pattern = r'(\d)[^\d]*(\d)'
+    
+    # 정규식으로 학년과 반 추출
+    match = re.search(pattern, class_str)
+    
+    if match:
+        grade = match.group(1)
+        classroom = match.group(2)
+        return f"{grade},{classroom}"
+    else:
+        return "Invalid format"
+
+def ex_res_data(response_text):
     response_data = {
         "version": "2.0",
         "template": {
@@ -119,9 +133,11 @@ def get_timetable():
     BASE_URL = "https://open.neis.go.kr/hub/hisTimetable"
     # https://open.neis.go.kr/hub/hisTimetable?ATPT_OFCDC_SC_CODE=P10&SD_SCHUL_CODE=8321124&AY=2024&SEM=1&ALL_TI_YMD=20240509
     today = request.json.get('action').get('detailParams').get('날짜').get('origin')
-    # today = 20240509 # [중요] 배포시 삭제할 것
+    grade = request.json.get('action').get('detailParams').get('학년반').get('origin')
+    grade = convert_class_format(grade)
+    grade = str(grade)
+    #today = 20240509 # [중요] 배포시 삭제할 것
     today = datecal(today) #시간표 몇학년 몇반 입력해서 볼 수 있게 하기
-    #today = 20240509
     params = {
         "KEY": API_KEY,
         "Type": "json",
@@ -141,7 +157,8 @@ def get_timetable():
         timetable = "\n"
         GRADE = 0
         CLASS_NM = 0
-        for i in range(0, len(search), 1):
+        if grade == 'all':
+          for i in range(0, len(search), 1):
             if str(GRADE) != search[i]["GRADE"]:
                 GRADE += 1
                 CLASS_NM = 0
@@ -151,6 +168,17 @@ def get_timetable():
                 timetable += "<"+str(CLASS_NM)+"반>\n"
 
             timetable += search[i]["ITRT_CNTNT"] + "\n"
+        else:
+            GRADE = int(grade.split(',')[0])
+            CLASS_NM = int(grade.split(',')[1])
+            timetable += "<"+str(GRADE)+"학년 시간표>\n"
+            timetable += "<"+str(CLASS_NM)+"반>\n"
+            for i in range(0, len(search), 1): 
+                if str(GRADE) == search[i]["GRADE"]: 
+                  if (str(CLASS_NM) == search[i]["CLASS_NM"] and str(search[i]["CLASS_NM"]) != "None"):
+                    timetable += search[i]["ITRT_CNTNT"] + "\n"
+                elif str(GRADE) < search[i]["GRADE"]:
+                    break
         today = str(today)
         return today[:4]+'년 '+today[4:6]+'월 '+today[6:]+'일\n '+timetable
     except:
@@ -158,7 +186,7 @@ def get_timetable():
         return today[:4]+'년 '+today[4:6]+'월 '+today[6:]+'일 '+"시간표를 불러오는데 실패했습니다."
     
 def get_statement():
-    today = today = request.json.get('action').get('detailParams').get('날짜').get('origin')
+    today = request.json.get('action').get('detailParams').get('날짜').get('origin')
     #today = 20240509 # [중요] 배포시 삭제할 것
     today = datecal(today)
     statement = ["급식: 정상", "시간표: 정상", today] # 급식, 시간표
@@ -198,8 +226,22 @@ def get_statement():
 
 def get_calendar():
     BASE_URL = "https://open.neis.go.kr/hub/SchoolSchedule"
-    today = datetime.date.today()
-    this_month_first = int(str(today.year) + str(today.month).zfill(2) + '01') # 20240801
+    today = request.json.get('action').get('detailParams').get('월').get('origin')
+    if today=="이번달" or today=="이번 달":
+        today = datetime.date.today()
+        this_month_first = int(str(today.year) + str(today.month).zfill(2) + '01') # 20240801
+        month = str(today.month)+'월'
+    elif today=="저번달" or today=="저번 달":
+        today = datetime.date.today()
+        this_month_first = int(str(today.year) + str(int(str(today.month))-1).zfill(2) + '01') # 20240701
+        month = str(int(str(today.month))-1)+'월'
+    elif today=="다음달" or today=="다음 달":
+        today = datetime.date.today()
+        this_month_first = int(str(today.year) + str(int(str(today.month))+1).zfill(2) + '01') # 20240901
+        month = str(int(str(today.month))+1)+'월'
+    else:
+        this_month_first = int("2024"+today.replace("월", "").zfill(2)+'01')
+        month = today
     params = {
         "KEY": API_KEY,
         "Type": "json",
@@ -213,12 +255,12 @@ def get_calendar():
     data = response.json()
     try:
         search = data["SchoolSchedule"][1]["row"]
-        calendar = "<"+str(today.month)+"월 학사일정>\n"
+        calendar = "<"+month+" 학사일정>\n"
         for i in range(0, len(search), 1):
             calendar += search[i]["AA_YMD"] + ": " + search[i]["EVENT_NM"] + "\n"
         return calendar
     except:
-        return str(today.month) + "월 학사일정을 불러오는 데에 실패했습니다."
+        return month + " 학사일정을 불러오는 데에 실패했습니다."
 
 def get_exam():
     today = datetime.date.today()
@@ -260,6 +302,7 @@ def get_exam():
     else:
         "다음 시험까지 D-" + str(d_day) + "만큼 남았습니다.\n멍청이."
 
+
 @app.route('/menu/breakfast', methods=['GET', 'POST']) # 급식
 def menu_breakfast():
     response_text = get_menu("조식")
@@ -290,12 +333,12 @@ def timetable():
     response_text = get_timetable()
     return jsonify(ex_res_data(response_text))
 
-@app.route('/developers', methods=['GET', 'POST']) # 각인, 현재 삭제(필요시 추가)
+@app.route('/developers', methods=['GET', 'POST']) # 각인
 def developers():
     response_text = "33기 김윤석, 33기 김지혁"
     return jsonify(ex_res_data(response_text))
 
-@app.route('/help', methods=['GET', 'POST']) # 도움말, 현재 삭제(필요시 추가)
+@app.route('/help', methods=['GET', 'POST']) # 각인
 def help():
     response_text = """
     /메뉴, /급식, /밥: 조식, 중식, 석식 출력\n
